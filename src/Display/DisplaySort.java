@@ -1,4 +1,4 @@
-
+package Display;
 
 import Sorting.MergeSort;
 import Sorting.QuickSort;
@@ -6,11 +6,9 @@ import Sorting.QuickSort;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
-public class GamePanel extends JPanel implements Runnable
+public class DisplaySort extends JPanel implements Runnable
 {
     public final int COLUMNS = 20, ROWS = 20; //number of squares
     public final int SPRITE_SIZE = 16;
@@ -23,12 +21,28 @@ public class GamePanel extends JPanel implements Runnable
 
     private ArrayList<Comparable> array = null;
     private ArrayList<ArrayList<Comparable>> working = null;
-    public GamePanel()
+    private MergeSort mergeSort;
+    private QuickSort quickSort;
+    private int type;
+    public DisplaySort()
     {
         setPreferredSize(new Dimension(SCREEN_WIDTH,SCREEN_HEIGHT));
         setBackground(Color.BLACK);
         setDoubleBuffered(true);
+        mergeSort = new MergeSort();
+        quickSort = new QuickSort(array);
+        type = 0;
         rand = new Random();
+    }
+    public void setType(int t)
+    {
+        type = t;
+        switch (type)
+        {
+            case 1: break;
+            case 2: quickSort.reset(array);
+        }
+        array = null;
     }
     public synchronized void start()//start game
     {
@@ -65,11 +79,7 @@ public class GamePanel extends JPanel implements Runnable
             long currentTime = System.nanoTime();
             delta += (currentTime - lastTime) / interval;//number of ticks due since last loop
             lastTime = currentTime;
-            while(delta >= 1)//catch up on ticks if behind
-            {
-                tick();
-                delta--;
-            }
+            tick();
             if(running)
             {
                 repaint();//render game
@@ -86,22 +96,26 @@ public class GamePanel extends JPanel implements Runnable
             {
                 array.add(rand.nextDouble());
             }
-            QuickSort.setUp();
-            //working = MergeSort.animatedSort();
+            quickSort.reset(array);
+        }
+        else
+        {
+            if(!quickSort.isDone())
+            {
+                quickSort.tick();
+            }
+            else
+            {
+                System.out.println("d");
+            }
         }
     }
     public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
-        g.setColor(Color.WHITE);
         if(array != null)
         {
-            for (int i = 0; i < array.size(); i++)
-            {
-                g.fillRect(i * getWidth()/array.size(), (int)(getHeight()-(Double) array.get(i)*getHeight()), getWidth()/array.size(), (int)((Double) array.get(i)*getHeight()));
-
-            }
-            array = QuickSort.animatedSort(array,0,array.size()-1);
+             quickSort.render(g, getWidth(), getHeight());
         }
         /*if(working != null)
         {

@@ -1,27 +1,49 @@
 package Sorting;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class MergeSort
+public class MergeSort extends Sort
 {
     private static ArrayList<Comparable> array;
-    private static int depth;
-    private static int currentdepth;
-    public static void setUp(ArrayList<Comparable> arr)
+    public MergeSort(ArrayList<Comparable> arr)
     {
         array = arr;
-        depth = 1;
+    }
+    public static void reset(ArrayList<Comparable> arr)
+    {
+        array = arr;
+    }
+    @Override
+    public void tick()
+    {
+        if(!isDone())
+        {
+            try
+            {
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        }
+    }
+
+    @Override
+    public void render(Graphics g, int width, int height)
+    {
+        g.setColor(Color.WHITE);
+        for (int i = 0; i < array.size(); i++)
+        {
+            g.fillRect(i * width/array.size(), (int)(height-(Double) array.get(i)*height), width/array.size(), (int)((Double) array.get(i)*height));
+        }
     }
     public static ArrayList<ArrayList<Comparable>> animatedSort()
     {
-        depth = Math.min(depth*2, array.size());
-        /*try
-        {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }*/
         ArrayList<ArrayList<Comparable>> ans = new ArrayList<>();
         if(array.size() <= 1)
         {
@@ -57,7 +79,13 @@ public class MergeSort
         }
         return ans;
     }
-    public static ArrayList<Comparable> sort(ArrayList<Comparable> arr)
+
+    @Override
+    public boolean isDone() {
+        return false;
+    }
+
+    public ArrayList<Comparable> sort(ArrayList<Comparable> arr)
     {
         ArrayList<Comparable> ans = new ArrayList<>();
         if(arr.size() <= 1)
@@ -67,8 +95,8 @@ public class MergeSort
         else
         {
             int size = (int)Math.ceil(arr.size()/2.0);
-            ArrayList<Comparable> subArray1 = MergeSort.sort(new ArrayList<>(arr.subList(0,size)));
-            ArrayList<Comparable> subArray2 = MergeSort.sort(new ArrayList<>(arr.subList(size,arr.size())));
+            ArrayList<Comparable> subArray1 = sort(new ArrayList<>(arr.subList(0,size)));
+            ArrayList<Comparable> subArray2 = sort(new ArrayList<>(arr.subList(size,arr.size())));
             while (subArray1.size() > 0 || subArray2.size() > 0)
             {
                 Comparable a = subArray1.size() > 0 ? subArray1.get(0) : null;
