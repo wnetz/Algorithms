@@ -29,7 +29,7 @@ public class DisplaySort extends JPanel implements Runnable
         setPreferredSize(new Dimension(SCREEN_WIDTH,SCREEN_HEIGHT));
         setBackground(Color.BLACK);
         setDoubleBuffered(true);
-        mergeSort = new MergeSort();
+        //mergeSort = new MergeSort();
         quickSort = new QuickSort(array);
         type = 0;
         rand = new Random();
@@ -96,18 +96,7 @@ public class DisplaySort extends JPanel implements Runnable
             {
                 array.add(rand.nextDouble());
             }
-            quickSort.reset(array);
-        }
-        else
-        {
-            if(!quickSort.isDone())
-            {
-                quickSort.tick();
-            }
-            else
-            {
-                System.out.println("d");
-            }
+            quickSort.tick(array);
         }
     }
     public void paintComponent(Graphics g)

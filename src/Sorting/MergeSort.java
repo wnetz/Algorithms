@@ -44,40 +44,7 @@ public class MergeSort extends Sort
     }
     public static ArrayList<ArrayList<Comparable>> animatedSort()
     {
-        ArrayList<ArrayList<Comparable>> ans = new ArrayList<>();
-        if(array.size() <= 1)
-        {
-            ans.add(array);
-        }
-        else
-        {
-            ArrayList<ArrayList<Comparable>> temp = new ArrayList<>();
-            temp.add(array);
-            boolean done = false;
-            do
-            {
-                done = true;
-                for(int i = 0; i < temp.size(); i++)
-                {
-                    if(temp.get(i).size()>depth)
-                    {
-                        done = false;
-                        ArrayList<Comparable> current = temp.get(i);
-                        temp.remove(i);
-                        int size = (int)Math.ceil(current.size()/2.0);
-                        temp.add(new ArrayList<>(current.subList(0,size)));
-                        temp.add(new ArrayList<>(current.subList(size,current.size())));
-                    }
-                }
-
-            }
-            while(!done);
-            for(int i = 0; i < temp.size(); i++)
-            {
-                ans.add(sort(temp.get(i)));
-            }
-        }
-        return ans;
+        return null;
     }
 
     @Override

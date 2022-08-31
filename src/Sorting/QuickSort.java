@@ -4,138 +4,129 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class QuickSort extends Sort
+public class QuickSort
 {
-    private int depth;
-    private boolean done;
     private ArrayList<Comparable> array;
-    private ArrayList<Integer> index;
-    private ArrayList<Integer> current;
+    private ArrayList<Integer> state;
+    private Thread thread;
+    private boolean stop;
     public QuickSort(ArrayList<Comparable> arr)
     {
-        depth =  0;
-        done = false;
         array = arr;
-        index = new ArrayList<>();
-        current = new ArrayList<>();
+        state = new ArrayList<>();
+        stop = false;
+        for(int i = 0; array!= null && i < array.size();i++)
+        {
+            state.add(-1);
+        }
     }
     public void reset(ArrayList<Comparable> arr)
     {
-        depth =  0;
-        done = false;
         array = arr;
-        index = new ArrayList<>();
-        current = new ArrayList<>();
-    }
-
-    public void tick()
-    {
-        if(!isDone())
+        state = new ArrayList<>();
+        stop = false;
+        for(int i = 0; i < array.size();i++)
         {
-            try
-            {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException e)
-            {
+            state.add(-1);
+        }
+    }
+    public void tick(ArrayList<Comparable> arr)
+    {
+        if(thread!=null)
+        {
+            stop = true;
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            current = new ArrayList<>();
-            if(index.size() == 0)
-            {
-                index.add(animatedSort(0, array.size() - 1));
-                current.add(index.get(0));
-            }
-            else
-            {
-                ArrayList<Integer> temp = new ArrayList<>();
-                index.forEach(i-> temp.add(i));
-                index.add(0,animatedSort(0, index.get(0)-1));
-                current.add(index.get(0));
-                for(int i = 2; i < index.size();i+=2)
-                {
-                    index.add(i,animatedSort(index.get(i-1)+1, index.get(i))-1);
-                    current.add(index.get(i));
-                }
-                index.add(animatedSort(index.get(index.size()-1)+1,array.size() - 1));
-                current.add(index.get(index.size()-1));
-                index = new ArrayList<>(index.stream().filter(a-> a>0).collect(Collectors.toList()));
-                current = new ArrayList<>(current.stream().filter(a-> a>0).collect(Collectors.toList()));
-                //index = temp;
-            }
         }
+        reset(arr);
+        thread = new Thread(()->sort(0,array.size()-1));
+        thread.start();
     }
     public void render(Graphics g, int width, int height)
     {
-        g.setColor(Color.WHITE);
         for (int i = 0; i < array.size(); i++)
         {
+            if(state.get(i) == 0)
+            {
+                g.setColor(Color.RED);
+            }
+            else if(state.get(i) == 1)
+            {
+                g.setColor(Color.BLUE);
+            }
+            else if(state.get(i) == 2)
+            {
+                g.setColor(Color.GREEN);
+            }
+            else
+            {
+                g.setColor(Color.WHITE);
+            }
             g.fillRect(i * width/array.size(), (int)(height-(Double) array.get(i)*height), width/array.size(), (int)((Double) array.get(i)*height));
         }
-        g.setColor(Color.RED);
-        for(int i = 0; i < current.size(); i++)
-        {
-            g.fillRect(current.get(i) * width/array.size(), (int)(height-(Double) array.get(current.get(i))*height), width/array.size(), (int)((Double) array.get(current.get(i))*height));
-        }
-        current = new ArrayList<>();
     }
-    @Override
-    public boolean isDone()
+    public void sort(int start, int end)
     {
-        int count = 0;
-        for(int i = 1; i < array.size()-1;i++)
+        if(start>=end || stop)
         {
-            count = array.get(i).compareTo(array.get(i-1)) >= 0 ? count: count+1;
+            return;
         }
-        return count == 0;
-    }
-    private int animatedSort(int start, int end)
-    {
-        if(start < end && end < array.size())
+        for (int i = start; i <= end && !stop; i++)
         {
-            Comparable pick = array.get(end);
-            int swapIndex = start;
-            for (int i = start; i < end; i++)
+            state.set(i,1);
+        }
+        Comparable pivot = array.get(end);
+        int swapindex = start;
+        state.set(swapindex,0);
+        for (int i = start; i < end && !stop; i++)
+        {
+            if (pivot.compareTo(array.get(i)) >= 0)
             {
-                if (pick.compareTo(array.get(i)) >= 0)
-                {
-                    Comparable temp = array.get(i);
-                    array.set(i, array.get(swapIndex));
-                    array.set(swapIndex, temp);
-                    swapIndex++;
-                }
+                swap(i,swapindex);
+                state.set(swapindex,2);
+                swapindex++;
+                state.set(swapindex,0);
             }
-            array.set(end, array.get(swapIndex));
-            array.set(swapIndex, pick);
-            return swapIndex;
+            state.set(i,2);
         }
-        return -1;
-    }
-    public ArrayList<Comparable> sort(ArrayList<Comparable> array)
-    {
-        return sort(array,0, array.size()-1);
-    }
-    private ArrayList<Comparable> sort(ArrayList<Comparable> array, int start, int end)
-    {
-        if(start < end && end < array.size())
+        state.set(swapindex,-1);
+        swap(swapindex,end);
+        for (int i = start; i <= end && !stop; i++)
         {
-            Comparable pick = array.get(end);
-            int swapindex = start;
-            for (int i = start; i < end; i++)
-            {
-                if (pick.compareTo(array.get(i)) >= 0)
-                {
-                    Comparable temp = array.get(i);
-                    array.set(i, array.get(swapindex));
-                    array.set(swapindex, temp);
-                    swapindex++;
-                }
-            }
-            array.set(end, array.get(swapindex));
-            array.set(swapindex, pick);
-            sort(array, 0, swapindex - 1);
-            sort(array, swapindex + 1, end);
+            if(state.get(i) != 0)
+                state.set(i,-1);
         }
-        return array;
+        int finalSwapindex = swapindex;
+        Thread thread1 = new Thread(()->sort(start, finalSwapindex - 1));
+        Thread thread2 = new Thread(()->sort(finalSwapindex + 1, end));
+        if(!stop)
+        {
+            thread1.start();
+            thread2.start();
+            try
+            {
+                thread1.join();
+                thread2.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
+
+    }
+    private void swap(int index1, int index2)
+    {
+        try {
+            Thread.sleep(20);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        Comparable temp = array.get(index1);
+        array.set(index1,array.get(index2));
+        array.set(index2,temp);
     }
 }
